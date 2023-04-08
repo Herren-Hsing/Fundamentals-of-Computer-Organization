@@ -32,12 +32,12 @@ module multiply(              // 乘法器
     assign op1_absolute = op1_sign ? (~mult_op1+1) : mult_op1;
     assign op2_absolute = op2_sign ? (~mult_op2+1) : mult_op2;
 
-    //加载被乘数，运算时每次左移一位
+ 
     reg  [63:0] multiplicand;
     always @ (posedge clk)
     begin
         if (mult_valid)
-        begin    // 如果正在进行乘法，则被乘数每时钟左移一位
+        begin 
             multiplicand <= {multiplicand[61:0],2'b0};
         end
         else if (mult_begin) 
@@ -46,12 +46,12 @@ module multiply(              // 乘法器
         end
     end
 
-    //加载乘数，运算时每次右移一位
+
     reg  [31:0] multiplier;
     always @ (posedge clk)
     begin
         if (mult_valid)
-        begin   // 如果正在进行乘法，则乘数每时钟右移一位
+        begin   
             multiplier <= {2'b0,multiplier[31:2]}; 
         end
         else if (mult_begin)
@@ -61,21 +61,11 @@ module multiply(              // 乘法器
     end
     
     
-    // 部分积：乘数末位为1，由被乘数左移得到；乘数末位为0，部分积为0
-    reg [63:0] partial_product;
-    always@(multiplier[1:0])
-    begin
-        case(multiplier[1:0])
-            2'd00:
-                partial_product <= 64'd0;
-            2'd01:
-                partial_product <= multiplicand;
-            2'd11:
-                partial_product <= multiplicand + multiplicand + multiplicand;
-            2'd10:
-                partial_product <= multiplicand + multiplicand;
-	   endcase
-	end
+    // 部分积
+    wire [63:0] partial_product;
+    assign partial_product = multiplier[1] ? (multiplier[0] ? (multiplicand
++ multiplicand + multiplicand) : (multiplicand + multiplicand)):(
+multiplier[0] ? multiplicand : 64'd0);
     
     //累加器
     reg [63:0] product_temp;
