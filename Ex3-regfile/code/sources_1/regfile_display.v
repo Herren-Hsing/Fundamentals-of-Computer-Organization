@@ -40,7 +40,7 @@ module regfile_display(
     assign led_wen2    = (wen[2]==1);
     assign led_wen3    = (wen[3]==1);
     assign led_readwen0=(readwen[0]==1);
-    assign led_readwen1=(readwen[0]==1);
+    assign led_readwen1=(readwen[1]==1);
     assign led_raddr1 = (input_sel==2'd0);
     assign led_raddr2 = (input_sel==2'd1);
     assign led_waddr  = (input_sel==2'd2);
