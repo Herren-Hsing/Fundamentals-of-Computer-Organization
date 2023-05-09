@@ -20,7 +20,7 @@ module alu(
     wire alu_lui;   //高位加载
 	wire alu_seq;   //等于则置位
 	wire alu_xnor;   //按位同或
-	wire alu_sgt;   //有符号比较，大于置位，复用加法器做减法
+	wire alu_lli;   //低位加载
 
     assign alu_add  = (alu_control == 4'b0001);
     assign alu_sub  = (alu_control == 4'b0010);
@@ -36,7 +36,7 @@ module alu(
     assign alu_lui  = (alu_control == 4'b1100);
     assign alu_seq  = (alu_control == 4'b1101);
     assign alu_xnor  = (alu_control == 4'b1110);
-    assign alu_sgt  = (alu_control == 4'b1111);
+    assign alu_lli  = (alu_control == 4'b1111);
 
 
     wire [31:0] add_sub_result;
@@ -52,7 +52,7 @@ module alu(
     wire [31:0] lui_result;
     wire [31:0] xnor_result;
     wire [31:0] seq_result;
-    wire [31:0] sgt_result;
+    wire [31:0] lli_result;
 
 
     assign and_result = alu_src1 & alu_src2;      // 与结果为两数按位与
@@ -60,6 +60,7 @@ module alu(
     assign nor_result = ~or_result;               // 或非结果为或结果按位取反
     assign xor_result = alu_src1 ^ alu_src2;      // 异或结果为两数按位异或
     assign lui_result = {alu_src2[15:0], 16'd0};  // 立即数装载结果为立即数移位至高半字节
+    assign lli_result = {16'd0,alu_src2[15:0] };  // 立即数装载结果为立即数移位至低半字节
     assign xnor_result = ~xor_result;             //同或结果为异或结果按位取反
 
 //-----{加法器}begin
@@ -106,9 +107,7 @@ module alu(
 	assign seq_result[31:1] = 31'd0;
 	assign seq_result[0]    = (adder_result == 32'h00000000) ? 1 : 0;
 
-	assign sgt_result[31:1] = 31'd0;
-	assign sgt_result[0]    = (adder_result == 32'h00000000) ? 0 : ~slt_result[0];
-
+	
 //-----{加法器}end
 
 //-----{移位器}begin
@@ -176,7 +175,7 @@ module alu(
                         alu_sra           ? sra_result :
                         alu_lui           ? lui_result :
 				alu_xnor          ? xnor_result:
-				alu_sgt           ? sgt_result:
+				alu_lli           ? lli_result:
 				alu_seq           ? seq_result:
                         32'd0;
 endmodule
